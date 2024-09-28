@@ -54,12 +54,12 @@ public class AdminUserService {
     public AdminUserListResponse getAllUsers(int page, int size) {
         Page<User> userPage = userRepository.findAllActiveUsers(PageRequest.of(page, size));
 
-        List<AdminUserResponse> adminUserRespons = userPage.getContent().stream()
+        List<AdminUserResponse> adminUserResponse = userPage.getContent().stream()
                 .map(this::convertToAdminUserResponse)
                 .collect(Collectors.toList());
 
         return AdminUserListResponse.builder()
-                .users(adminUserRespons)
+                .users(adminUserResponse)
                 .totalPages(userPage.getTotalPages())
                 .totalElements(userPage.getTotalElements())
                 .currentPage(userPage.getNumber())
