@@ -16,6 +16,7 @@ import com.yoonji.adminproject.user.repository.RoleRepository;
 import com.yoonji.adminproject.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -87,6 +88,7 @@ public class AdminUserService {
         findUser.delete();
     }
 
+    @CacheEvict(cacheNames = "userCache", key = "'users:' + #id + ':profile'")
     @Transactional
     public AdminUserResponse updateUser(Long id, AdminUserUpdateRequest request) {
         User findUser = userRepository.findById(id)
