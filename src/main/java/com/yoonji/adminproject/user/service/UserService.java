@@ -37,7 +37,7 @@ public class UserService {
                 .build();
     }
 
-    @Cacheable(cacheNames = "userCache", key = "'user:' + #id", cacheManager = "cacheManager")
+    @Cacheable(cacheNames = "userCache", key = "'users:' + #id", cacheManager = "cacheManager")
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
         log.debug("Cache Miss for user ID: {}", id);
@@ -50,7 +50,7 @@ public class UserService {
                 .build();
     }
 
-    @CacheEvict(cacheNames = "userCache", key = "'user:' + #principal.getId()")
+    @CacheEvict(cacheNames = "userCache", key = "'users:' + #principal.getId()")
     @Transactional
     public UserResponse updateUser(UserPrincipal principal, UserUpdateRequest request) {
         log.debug("Cache Evict for user ID: {}", principal.getId());
