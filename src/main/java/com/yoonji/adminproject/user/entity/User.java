@@ -58,7 +58,7 @@ public class User extends BaseTimeEntity {
         return user;
     }
 
-    public static User createOAuthUser(OAuthAttributes attributes, UserRole... userRoles) {
+    public static User createOAuthUser(OAuthAttributes attributes, Set<UserRole> userRoles) {
         User user = new User();
         user.email = attributes.getEmail();
         user.nickname = attributes.getNickname();
