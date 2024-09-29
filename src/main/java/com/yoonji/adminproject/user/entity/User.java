@@ -39,7 +39,7 @@ public class User extends BaseTimeEntity {
 
     // == 연관관계 메서드 ==
     public void addUserRole(UserRole userRole) {
-        userRoles.add(userRole);
+        this.userRoles.add(userRole);
         userRole.updateUser(this);
     }
 
