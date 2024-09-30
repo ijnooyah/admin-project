@@ -4,6 +4,7 @@ spring:
     url: ENC(9IdTlqsjf3DXgV4TDlroMm999Kvlt6OuWLPtlcUZeJl2VBCHJ20FCztbO82nBwwsyI97cnuIBgiDpvwX4uXrTaJ1HVscpu+jwH1kViEyZQ5eXOZiW9w8TuOTJfT2xUTY6O4zn7cx49TW1HY8uSSHg4JVY0oyIogeV7s5qjP6GLPJRZdxO/uaPA==)
     username: ENC(CKWjcHdH8rehAjxlyXRIdQ==)
     password: ENC(HBv/vxxoC9IWg/HyH0/65w==)
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,10 +12,17 @@ spring:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 1000
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
   data:
     redis:
       host: localhost
       port: 6379
+
   profiles:
     include: oauth
 
