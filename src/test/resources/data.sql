@@ -1,0 +1,11 @@
+INSERT INTO role (role_name)
+SELECT 'ROLE_USER'
+    WHERE NOT EXISTS (SELECT 1 FROM role WHERE role_name = 'ROLE_USER');
+
+INSERT INTO role (role_name)
+SELECT 'ROLE_ADMIN'
+    WHERE NOT EXISTS (SELECT 1 FROM role WHERE role_name = 'ROLE_ADMIN');
+
+INSERT INTO role (role_name)
+SELECT 'ROLE_MANAGER'
+    WHERE NOT EXISTS (SELECT 1 FROM role WHERE role_name = 'ROLE_MANAGER');
