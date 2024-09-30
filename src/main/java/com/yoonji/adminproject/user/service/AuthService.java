@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 
 @Service
-
 public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
