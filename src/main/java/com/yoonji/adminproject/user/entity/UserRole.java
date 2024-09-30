@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "user_role")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,8 +25,9 @@ public class UserRole extends BaseTimeEntity {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    public void updateUser(User user) {
+    public UserRole updateUser(User user) {
         this.user = user;
+        return this;
     }
 
     // 생성 메서드
@@ -32,5 +35,18 @@ public class UserRole extends BaseTimeEntity {
         UserRole userRole = new UserRole();
         userRole.role = role;
         return userRole;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserRole userRole = (UserRole) o;
+        return Objects.equals(user, userRole.user) && Objects.equals(role, userRole.role);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, role);
     }
 }
