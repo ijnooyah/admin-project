@@ -22,9 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,15 +61,6 @@ class AdminUserServiceTest {
         User createdUser = User.createLocalUser(request, passwordEncoder, Collections.singleton(userRole));
 
         user = userRepository.save(createdUser);
-    }
-
-    @Test
-    @DisplayName("모든 사용자 조회")
-    void getAllUsers() {
-        AdminUserListResponse response = adminUserService.getAllUsers(0, 10);
-
-        assertThat(response.getUsers()).isNotEmpty();
-        assertThat(response.getCurrentPage()).isZero();
     }
 
     @Test
@@ -139,6 +128,27 @@ class AdminUserServiceTest {
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("커서 기반으로 사용자 조회")
+    void getUsersWithCursor() {
+
+        AdminUserListResponse firstPageResponse = adminUserService.getUsersWithCursor(null, 10);
+        assertThat(firstPageResponse.getUsers()).hasSize(10);
+        assertThat(firstPageResponse.getNextCursorId()).isNotNull();
+
+
+        Long nextCursorId = firstPageResponse.getNextCursorId();
+        AdminUserListResponse secondPageResponse = adminUserService.getUsersWithCursor(nextCursorId, 10);
+        assertThat(secondPageResponse.getUsers()).hasSize(10);
+        assertThat(secondPageResponse.getNextCursorId()).isNotNull();
+
+
+        Long thirdCursorId = secondPageResponse.getNextCursorId();
+        AdminUserListResponse thirdPageResponse = adminUserService.getUsersWithCursor(thirdCursorId, 10);
+        assertThat(thirdPageResponse.getUsers()).hasSize(2);
+        assertThat(thirdPageResponse.getNextCursorId()).isNull();
     }
 
 }

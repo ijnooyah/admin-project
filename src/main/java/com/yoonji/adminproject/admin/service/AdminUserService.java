@@ -2,12 +2,14 @@ package com.yoonji.adminproject.admin.service;
 
 
 import com.yoonji.adminproject.admin.dto.request.AdminUserAddRequest;
+import com.yoonji.adminproject.admin.dto.request.AdminUserCursorRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserRolesRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.user.dto.response.UserResponse;
 import com.yoonji.adminproject.user.entity.ProviderType;
 import com.yoonji.adminproject.user.entity.Role;
 import com.yoonji.adminproject.user.entity.User;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,18 +55,23 @@ public class AdminUserService {
     }
 
     @Transactional(readOnly = true)
-    public AdminUserListResponse getAllUsers(int page, int size) {
-        Page<User> userPage = userRepository.findAllActiveUsers(PageRequest.of(page, size));
+    public AdminUserListResponse getUsersWithCursor(Long cursorId, int size) {
+        Slice<User> userSlice = (cursorId == null || cursorId == 0) ?
+                userRepository.findFirstActiveUsers(PageRequest.of(0, size + 1)) :
+                userRepository.findActiveUsersAfterCursor(cursorId, PageRequest.of(0, size + 1));
 
-        List<AdminUserResponse> adminUserResponse = userPage.getContent().stream()
+        List<AdminUserResponse> adminUserResponse = userSlice.getContent().stream()
+                .limit(size)
                 .map(this::convertToAdminUserResponse)
                 .collect(Collectors.toList());
 
+        // 마지막 사용자 ID를 커서로 설정
+        Long nextCursorId = userSlice.hasNext() ?
+                userSlice.getContent().getLast().getId() : null;
+
         return AdminUserListResponse.builder()
                 .users(adminUserResponse)
-                .totalPages(userPage.getTotalPages())
-                .totalElements(userPage.getTotalElements())
-                .currentPage(userPage.getNumber())
+                .nextCursorId(nextCursorId) // 다음 커서 ID 설정
                 .build();
     }
 
@@ -73,6 +81,7 @@ public class AdminUserService {
                 .collect(Collectors.toSet());
 
         return AdminUserResponse.builder()
+                .id(user.getId())
                 .email(user.getEmail())
                 .roles(roles)
                 .provider(user.getProvider().name())
@@ -169,5 +178,6 @@ public class AdminUserService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
+
 
 }

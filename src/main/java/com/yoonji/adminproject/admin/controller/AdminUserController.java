@@ -9,7 +9,10 @@ import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.admin.service.AdminUserService;
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.admin.controller.AdminUserControllerDocs;
+import com.yoonji.adminproject.admin.dto.request.AdminUserCursorRequest;
+import com.yoonji.adminproject.user.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +23,11 @@ public class AdminUserController implements AdminUserControllerDocs {
 
     private final AdminUserService adminUserService;
 
-    @GetMapping
-    public CommonResponse<AdminUserListResponse> getAllUsers(@RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "10") int size) {
-        return new CommonResponse<>(HttpStatus.OK, adminUserService.getAllUsers(page, size));
+    @GetMapping("/cursor")
+    public CommonResponse<AdminUserListResponse> getUsersWithCursor(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "10") int size) {
+        return new CommonResponse<>(HttpStatus.OK, adminUserService.getUsersWithCursor(cursorId, size));
     }
 
     @DeleteMapping("/{id}")

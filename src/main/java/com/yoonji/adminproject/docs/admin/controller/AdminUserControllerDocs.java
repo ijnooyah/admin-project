@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Admin User", description = "Admin User API")
 public interface AdminUserControllerDocs {
 
-    @Operation(summary = "회원 전체 조회")
+    @Operation(summary = "회원 커서 조회")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원 전체 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "회원 커서 조회 성공"),
     })
-    CommonResponse<AdminUserListResponse> getAllUsers(@RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "10") int size);
+    CommonResponse<AdminUserListResponse> getUsersWithCursor(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "10") int size);
 
     @Operation(summary = "회원 삭제")
     @ApiResponses(value = {

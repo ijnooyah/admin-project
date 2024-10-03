@@ -11,6 +11,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 public class AdminUserResponse {
+    private Long id;
     private String email;
     private String nickname;
     private String picture;
@@ -18,7 +19,8 @@ public class AdminUserResponse {
     private String provider;
 
     @Builder
-    public AdminUserResponse(String email, String nickname, String picture, Set<String> roles, String provider) {
+    public AdminUserResponse(Long id, String email, String nickname, String picture, Set<String> roles, String provider) {
+        this.id = id;
         this.email = email;
         this.nickname = nickname;
         this.picture = picture;
