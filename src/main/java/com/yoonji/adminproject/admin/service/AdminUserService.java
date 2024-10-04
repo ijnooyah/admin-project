@@ -2,14 +2,14 @@ package com.yoonji.adminproject.admin.service;
 
 
 import com.yoonji.adminproject.admin.dto.request.AdminUserAddRequest;
-import com.yoonji.adminproject.admin.dto.request.AdminUserCursorRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserRolesRequest;
+import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
-import com.yoonji.adminproject.user.dto.response.UserResponse;
+import com.yoonji.adminproject.user.dto.request.SortType;
 import com.yoonji.adminproject.user.entity.ProviderType;
 import com.yoonji.adminproject.user.entity.Role;
 import com.yoonji.adminproject.user.entity.User;
@@ -19,13 +19,12 @@ import com.yoonji.adminproject.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,27 +53,6 @@ public class AdminUserService {
         return new HashSet<>(roleRepository.findAll());
     }
 
-    @Transactional(readOnly = true)
-    public AdminUserListResponse getUsersWithCursor(Long cursorId, int size) {
-        Slice<User> userSlice = (cursorId == null || cursorId == 0) ?
-                userRepository.findFirstActiveUsers(PageRequest.of(0, size + 1)) :
-                userRepository.findActiveUsersAfterCursor(cursorId, PageRequest.of(0, size + 1));
-
-        List<AdminUserResponse> adminUserResponse = userSlice.getContent().stream()
-                .limit(size)
-                .map(this::convertToAdminUserResponse)
-                .collect(Collectors.toList());
-
-        // 마지막 사용자 ID를 커서로 설정
-        Long nextCursorId = userSlice.hasNext() ?
-                userSlice.getContent().getLast().getId() : null;
-
-        return AdminUserListResponse.builder()
-                .users(adminUserResponse)
-                .nextCursorId(nextCursorId) // 다음 커서 ID 설정
-                .build();
-    }
-
     private AdminUserResponse convertToAdminUserResponse(User user) {
         Set<String> roles = user.getUserRoles().stream()
                 .map(userRole -> userRole.getRole().getName())
@@ -86,6 +64,7 @@ public class AdminUserService {
                 .roles(roles)
                 .provider(user.getProvider().name())
                 .nickname(user.getNickname())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 
@@ -179,5 +158,49 @@ public class AdminUserService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public AdminUserListResponse searchUsersWithCursor(AdminUserSearchCondition condition) {
+        List<User> users = userRepository.searchUsersWithCursor(condition);
+
+        boolean hasNext = false;
+        String nextCursorId = null;
+
+        if (users.size() > condition.getSize()) {
+            hasNext = true;
+            Long userId = users.getLast().getId();
+
+            nextCursorId = switch (SortType.valueOf(condition.getSortType())) {
+                case CREATED_AT -> generateCreatedAtCursorId(users.getLast().getCreatedAt(), userId);
+                case EMAIL -> users.getLast().getEmail();
+            };
+        }
+
+        List<AdminUserResponse> adminUserResponse = users.stream()
+                .limit(condition.getSize())
+                .map(this::convertToAdminUserResponse)
+                .collect(Collectors.toList());
+
+
+        return AdminUserListResponse.builder()
+                .users(adminUserResponse)
+                .hasNext(hasNext)
+                .nextCursorId(nextCursorId) // 다음 커서 ID 설정
+                .build();
+    }
+
+    private String generateCreatedAtCursorId(LocalDateTime createdAt, Long userId){
+        // 1. LocalDateTime을 DATE_FORMAT와 동일한 포맷으로 변환 (yyMMddHHmmss)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMddHHmmss");
+        String formattedCreatedAt = createdAt.format(formatter);
+
+        // 2. 포맷된 createdAt을 20자리로 왼쪽을 '0'으로 채움
+        String customCursorCreatedAt = String.format("%1$" + 20 + "s", formattedCreatedAt).replace(' ', '0');
+
+        // 3. userId를 문자열로 변환하고 10자리로 왼쪽을 '0'으로 채움
+        String customCursorId = String.format("%1$" + 10 + "s", userId).replace(' ', '0');
+
+        // 4. 두 값을 연결하여 반환
+        return customCursorCreatedAt + customCursorId;
+    }
 
 }

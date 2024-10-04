@@ -3,16 +3,15 @@ package com.yoonji.adminproject.admin.controller;
 
 import com.yoonji.adminproject.admin.dto.request.AdminUserAddRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserRolesRequest;
+import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.admin.service.AdminUserService;
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.admin.controller.AdminUserControllerDocs;
-import com.yoonji.adminproject.admin.dto.request.AdminUserCursorRequest;
-import com.yoonji.adminproject.user.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +22,10 @@ public class AdminUserController implements AdminUserControllerDocs {
 
     private final AdminUserService adminUserService;
 
-    @GetMapping("/cursor")
-    public CommonResponse<AdminUserListResponse> getUsersWithCursor(
-            @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "10") int size) {
-        return new CommonResponse<>(HttpStatus.OK, adminUserService.getUsersWithCursor(cursorId, size));
+
+    @GetMapping("/search")
+    public CommonResponse<AdminUserListResponse> searchUsersWithCursor(@ParameterObject AdminUserSearchCondition condition) {
+        return new CommonResponse<>(HttpStatus.OK, adminUserService.searchUsersWithCursor(condition));
     }
 
     @DeleteMapping("/{id}")

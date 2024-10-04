@@ -3,12 +3,10 @@ package com.yoonji.adminproject.admin.service;
 import com.yoonji.adminproject.admin.dto.request.AdminUserAddRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserRolesRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
-import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
 import com.yoonji.adminproject.user.dto.request.SignUpRequest;
-import com.yoonji.adminproject.user.entity.ProviderType;
 import com.yoonji.adminproject.user.entity.Role;
 import com.yoonji.adminproject.user.entity.User;
 import com.yoonji.adminproject.user.entity.UserRole;
@@ -128,27 +126,6 @@ class AdminUserServiceTest {
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.USER_NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("커서 기반으로 사용자 조회")
-    void getUsersWithCursor() {
-
-        AdminUserListResponse firstPageResponse = adminUserService.getUsersWithCursor(null, 10);
-        assertThat(firstPageResponse.getUsers()).hasSize(10);
-        assertThat(firstPageResponse.getNextCursorId()).isNotNull();
-
-
-        Long nextCursorId = firstPageResponse.getNextCursorId();
-        AdminUserListResponse secondPageResponse = adminUserService.getUsersWithCursor(nextCursorId, 10);
-        assertThat(secondPageResponse.getUsers()).hasSize(10);
-        assertThat(secondPageResponse.getNextCursorId()).isNotNull();
-
-
-        Long thirdCursorId = secondPageResponse.getNextCursorId();
-        AdminUserListResponse thirdPageResponse = adminUserService.getUsersWithCursor(thirdCursorId, 10);
-        assertThat(thirdPageResponse.getUsers()).hasSize(2);
-        assertThat(thirdPageResponse.getNextCursorId()).isNull();
     }
 
 }

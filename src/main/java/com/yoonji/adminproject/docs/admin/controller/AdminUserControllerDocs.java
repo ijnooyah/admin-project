@@ -2,6 +2,7 @@ package com.yoonji.adminproject.docs.admin.controller;
 
 import com.yoonji.adminproject.admin.dto.request.AdminUserAddRequest;
 import com.yoonji.adminproject.admin.dto.request.AdminUserRolesRequest;
+import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,13 +19,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Admin User", description = "Admin User API")
 public interface AdminUserControllerDocs {
 
-    @Operation(summary = "회원 커서 조회")
+//    @Operation(summary = "회원 커서 조회")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "회원 커서 조회 성공"),
+//    })
+//    CommonResponse<AdminUserListResponse> getUsersWithCursor(
+//            @RequestParam(required = false) Long cursorId,
+//            @RequestParam(defaultValue = "10") int size);
+
+
+    @Operation(summary = "회원 검색")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원 커서 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "회원 검색 성공"),
     })
-    CommonResponse<AdminUserListResponse> getUsersWithCursor(
-            @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "10") int size);
+    CommonResponse<AdminUserListResponse> searchUsersWithCursor(@ParameterObject AdminUserSearchCondition condition);
 
     @Operation(summary = "회원 삭제")
     @ApiResponses(value = {
