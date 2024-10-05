@@ -7,6 +7,7 @@ import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
+import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
 import com.yoonji.adminproject.user.dto.request.SortType;
@@ -23,12 +24,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -203,4 +207,54 @@ public class AdminUserService {
         return customCursorCreatedAt + customCursorId;
     }
 
+    public NewUserStatisticsResponse getNewUserStatistics(String timeUnit, LocalDate startDate, LocalDate endDate) {
+        List<NewUserStatisticsResponse.PeriodStatistics> stats = userRepository.getNewUserStatistics(timeUnit, startDate, endDate);
+
+        calculateGrowthRates(stats);
+
+        int totalNewUsers = stats.stream().mapToInt(NewUserStatisticsResponse.PeriodStatistics::getNewUsers).sum();
+        double averageNewUsers = stats.stream().mapToInt(NewUserStatisticsResponse.PeriodStatistics::getNewUsers).average().orElse(0);
+
+        NewUserStatisticsResponse.PeriodStatistics maxStat = stats.stream()
+                .max(Comparator.comparingInt(NewUserStatisticsResponse.PeriodStatistics::getNewUsers))
+                .orElse(null);
+        NewUserStatisticsResponse.PeriodStatistics minStat = stats.stream()
+                .min(Comparator.comparingInt(NewUserStatisticsResponse.PeriodStatistics::getNewUsers))
+                .orElse(null);
+
+        NewUserStatisticsResponse.PeakNewUsers maxNewUsers = (maxStat != null)
+                ? new NewUserStatisticsResponse.PeakNewUsers(maxStat.getPeriod(), maxStat.getNewUsers())
+                : null;
+        NewUserStatisticsResponse.PeakNewUsers minNewUsers = (minStat != null)
+                ? new NewUserStatisticsResponse.PeakNewUsers(minStat.getPeriod(), minStat.getNewUsers())
+                : null;
+
+        return NewUserStatisticsResponse.builder()
+                .timeUnit(timeUnit)
+                .startDate(startDate)
+                .endDate(endDate)
+                .totalNewUsers(totalNewUsers)
+                .statistics(stats)
+                .averageNewUsersPerPeriod(averageNewUsers)
+                .maxNewUsers(maxNewUsers)
+                .minNewUsers(minNewUsers)
+                .build();
+    }
+
+    private void calculateGrowthRates(List<NewUserStatisticsResponse.PeriodStatistics> stats) {
+        if (stats.isEmpty()) {
+            return;
+        }
+
+        IntStream
+                .range(1, stats.size())
+                .forEach(i -> {
+                    NewUserStatisticsResponse.PeriodStatistics current = stats.get(i);
+                    NewUserStatisticsResponse.PeriodStatistics previous = stats.get(i - 1);
+                    double growthRate = (current.getNewUsers() - previous.getNewUsers()) / (double) previous.getNewUsers() * 100;
+                    current.setGrowthRate(Math.round(growthRate * 100.0) / 100.0);  // 소수점 두 자리까지 반올림
+                });
+
+        stats.getFirst().setGrowthRate(null);  // 첫 번째 기간의 성장률은 null
+    }
 }

@@ -5,7 +5,10 @@ import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.StringExpressions;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
+import com.yoonji.adminproject.admin.dto.response.QNewUserStatisticsResponse_PeriodStatistics;
 import com.yoonji.adminproject.user.dto.request.SearchType;
 import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.user.dto.request.SortType;
@@ -13,7 +16,9 @@ import com.yoonji.adminproject.user.entity.ProviderType;
 import com.yoonji.adminproject.user.entity.User;
 import com.yoonji.adminproject.user.repository.UserRepositoryCustom;
 import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Value;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -27,9 +32,59 @@ import static org.springframework.util.StringUtils.hasText;
 public class UserRepositoryImpl implements UserRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+    private final String databaseType;
 
-    public UserRepositoryImpl(EntityManager em) {
+    public UserRepositoryImpl(EntityManager em,  @Value("${spring.datasource.url}") String databaseUrl) {
         this.queryFactory = new JPAQueryFactory(em);
+        this.databaseType = getDatabaseType(databaseUrl);
+    }
+
+    private String getDatabaseType(String url) {
+        if (url.contains("h2")) {
+            return "h2";
+        } else if (url.contains("mysql")) {
+            return "mysql";
+        }
+        // Add more database types as needed
+        return "unknown";
+    }
+
+    @Override
+    public List<NewUserStatisticsResponse.PeriodStatistics> getNewUserStatistics(String timeUnit, LocalDate startDate, LocalDate endDate) {
+        StringTemplate dateFormat = getDateFormat(timeUnit);
+        return queryFactory
+                .select(new QNewUserStatisticsResponse_PeriodStatistics(
+                        dateFormat.as("period"),
+                        user.id.count().intValue().as("newUsers")
+                ))
+                .from(user)
+                .where(user.createdAt.between(startDate.atStartOfDay(), endDate.plusDays(1).atStartOfDay())
+                        .and(isNotDeleted())
+                )
+                .groupBy(dateFormat)
+                .orderBy(dateFormat.asc())
+                .fetch();
+    }
+
+    private StringTemplate getDateFormat(String timeUnit) {
+        return switch (databaseType) {
+            case "h2" -> switch (timeUnit) {
+                case "day" -> Expressions.stringTemplate("FORMATDATETIME({0}, 'yyyy-MM-dd')", user.createdAt);
+                case "week" ->
+                        Expressions.stringTemplate("FORMATDATETIME({0}, 'YYYY-')||'W'||FORMATDATETIME({0}, 'w')", user.createdAt);
+                case "month" -> Expressions.stringTemplate("FORMATDATETIME({0}, 'yyyy-MM')", user.createdAt);
+                case "year" -> Expressions.stringTemplate("FORMATDATETIME({0}, 'yyyy')", user.createdAt);
+                default -> throw new IllegalArgumentException("Invalid time unit: " + timeUnit);
+            };
+            case "mysql" -> switch (timeUnit) {
+                case "day" -> Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", user.createdAt);
+                case "week" -> Expressions.stringTemplate("DATE_FORMAT({0}, '%x-W%v')", user.createdAt);
+                case "month" -> Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m')", user.createdAt);
+                case "year" -> Expressions.stringTemplate("DATE_FORMAT({0}, '%Y')", user.createdAt);
+                default -> throw new IllegalArgumentException("Invalid time unit: " + timeUnit);
+            };
+            default -> throw new UnsupportedOperationException("Unsupported database type: " + databaseType);
+        };
     }
 
     @Override
@@ -66,7 +121,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         // sortType이 CREATED_AT일때
         if (SortType.CREATED_AT.name().equalsIgnoreCase(sortType)) {
-            StringExpression stringTemplate = Expressions.stringTemplate(
+            StringTemplate stringTemplate = Expressions.stringTemplate(
                     "cast(DATE_FORMAT({0}, {1}) as char)",
                     user.createdAt,
                     ConstantImpl.create("%y%m%d%H%i%s")

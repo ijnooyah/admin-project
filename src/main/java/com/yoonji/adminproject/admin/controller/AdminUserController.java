@@ -7,13 +7,17 @@ import com.yoonji.adminproject.admin.dto.request.AdminUserSearchCondition;
 import com.yoonji.adminproject.admin.dto.request.AdminUserUpdateRequest;
 import com.yoonji.adminproject.admin.dto.response.AdminUserListResponse;
 import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
+import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.admin.service.AdminUserService;
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.admin.controller.AdminUserControllerDocs;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/admin/users")
@@ -22,6 +26,12 @@ public class AdminUserController implements AdminUserControllerDocs {
 
     private final AdminUserService adminUserService;
 
+    @GetMapping("/stats/new")
+    public CommonResponse<NewUserStatisticsResponse> getNewUserStatistics(@RequestParam String timeUnit,
+                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate startDate,
+                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return new CommonResponse<>(HttpStatus.OK, adminUserService.getNewUserStatistics(timeUnit, startDate, endDate));
+    }
 
     @GetMapping("/search")
     public CommonResponse<AdminUserListResponse> searchUsersWithCursor(@ParameterObject AdminUserSearchCondition condition) {
