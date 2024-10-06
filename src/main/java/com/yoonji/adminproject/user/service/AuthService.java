@@ -1,11 +1,13 @@
 package com.yoonji.adminproject.user.service;
 
 
-import com.yoonji.adminproject.user.dto.request.SignUpRequest;
-import com.yoonji.adminproject.user.dto.response.UserResponse;
-import com.yoonji.adminproject.user.entity.*;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.user.dto.request.SignUpRequest;
+import com.yoonji.adminproject.user.dto.response.UserResponse;
+import com.yoonji.adminproject.user.entity.Role;
+import com.yoonji.adminproject.user.entity.User;
+import com.yoonji.adminproject.user.entity.UserRole;
 import com.yoonji.adminproject.user.repository.RoleRepository;
 import com.yoonji.adminproject.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final Role role;
-
 
     @Autowired
     public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {

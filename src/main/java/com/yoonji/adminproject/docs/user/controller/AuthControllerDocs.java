@@ -23,7 +23,7 @@ public interface AuthControllerDocs {
             @ApiResponse(responseCode = "409", description = "회원가입 실패(이미 존재하는 이메일)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
-    CommonResponse<UserResponse> signup(@RequestBody SignUpRequest request);
+    CommonResponse<UserResponse> signup(@RequestBody SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response);
 
     @Operation(summary = "로그아웃")
     @ApiResponse(responseCode = "200", description = "로그아웃 성공")
