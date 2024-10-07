@@ -28,7 +28,7 @@ public class AdminUserController implements AdminUserControllerDocs {
 
     @GetMapping("/stats/new")
     public CommonResponse<NewUserStatisticsResponse> getNewUserStatistics(@RequestParam String timeUnit,
-                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate startDate,
+                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return new CommonResponse<>(HttpStatus.OK, adminUserService.getNewUserStatistics(timeUnit, startDate, endDate));
     }

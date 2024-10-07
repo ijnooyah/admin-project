@@ -2,7 +2,9 @@ package com.yoonji.adminproject.user.controller;
 
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.user.controller.AuthControllerDocs;
+import com.yoonji.adminproject.security.principal.UserPrincipal;
 import com.yoonji.adminproject.security.token.RestAuthenticationToken;
+import com.yoonji.adminproject.user.dto.request.AdditionalInfoRequest;
 import com.yoonji.adminproject.user.dto.request.SignUpRequest;
 import com.yoonji.adminproject.user.dto.response.UserResponse;
 import com.yoonji.adminproject.user.service.AuthService;
@@ -12,14 +14,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -55,5 +55,10 @@ public class AuthController implements AuthControllerDocs {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
         }
         return new CommonResponse<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/additional-info")
+    public CommonResponse<UserResponse> updateUser(@AuthenticationPrincipal UserPrincipal principal, @RequestBody AdditionalInfoRequest request) {
+        return new CommonResponse<>(HttpStatus.OK, authService.updateUser(principal, request));
     }
 }

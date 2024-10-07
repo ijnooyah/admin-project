@@ -3,7 +3,10 @@ package com.yoonji.adminproject.user.service;
 
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.security.principal.UserPrincipal;
+import com.yoonji.adminproject.user.dto.request.AdditionalInfoRequest;
 import com.yoonji.adminproject.user.dto.request.SignUpRequest;
+import com.yoonji.adminproject.user.dto.request.UserUpdateRequest;
 import com.yoonji.adminproject.user.dto.response.UserResponse;
 import com.yoonji.adminproject.user.entity.Role;
 import com.yoonji.adminproject.user.entity.User;
@@ -61,6 +64,20 @@ public class AuthService {
         if (userRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
+    }
+
+    @Transactional
+    public UserResponse updateUser(UserPrincipal principal, AdditionalInfoRequest request) {
+        User findUser = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        User updateUser = findUser.update(request);
+
+        return UserResponse.builder()
+                .nickname(updateUser.getNickname())
+                .email(updateUser.getEmail())
+                .picture(updateUser.getPicture())
+                .build();
     }
 
 }

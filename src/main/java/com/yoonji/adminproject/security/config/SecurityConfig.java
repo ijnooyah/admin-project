@@ -6,6 +6,7 @@ import com.yoonji.adminproject.security.filter.RestAuthenticationFilter;
 import com.yoonji.adminproject.security.handler.RestAccessDeniedHandler;
 import com.yoonji.adminproject.security.handler.RestAuthenticationFailureHandler;
 import com.yoonji.adminproject.security.handler.RestAuthenticationSuccessHandler;
+import com.yoonji.adminproject.security.principal.UserPrincipal;
 import com.yoonji.adminproject.security.provider.RestAuthenticationProvider;
 import com.yoonji.adminproject.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static org.springframework.util.StringUtils.hasText;
 
 @Configuration
 @EnableWebSecurity
@@ -53,7 +56,12 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
                         .successHandler(((request, response, authentication) -> {
-                            response.sendRedirect("/");
+                            UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+                            if (!hasText(principal.getNickname())) {
+                                response.sendRedirect("/additional-info");
+                            } else {
+                                response.sendRedirect("/");
+                            }
                         }))
                 )
         ;
