@@ -1,7 +1,9 @@
 package com.yoonji.adminproject.user.entity;
 
+import com.yoonji.adminproject.common.entity.BaseTimeEntity;
+import com.yoonji.adminproject.file.entity.File;
 import com.yoonji.adminproject.security.dto.OAuthAttributes;
-import com.yoonji.adminproject.common.dto.request.user.UserRequest;
+import com.yoonji.adminproject.user.dto.request.UserRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static org.springframework.util.StringUtils.hasText;
 
 @Entity
 @Table(name = "users")
@@ -25,7 +29,6 @@ public class User extends BaseTimeEntity {
 
     private String nickname;
     private String email;
-    private String picture;
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -34,7 +37,11 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
-    private boolean deleted;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "file_id")
+    private File profileImage;
+
+    private boolean deleted = false;
 
     private LocalDateTime deletedAt;
 
@@ -44,15 +51,17 @@ public class User extends BaseTimeEntity {
         userRole.updateUser(this);
     }
 
+    public void addProfileImage(File file) {
+        this.profileImage = file;
+    }
+
     // == 생성 메서드 ==
     public static <T extends UserRequest> User createLocalUser(T  request, PasswordEncoder passwordEncoder, Set<UserRole> userRoles) {
         User user = new User();
         user.email = request.getEmail();
         user.nickname = request.getNickname();
         user.password = passwordEncoder.encode(request.getPassword());
-        user.picture = request.getPicture();
         user.provider = ProviderType.LOCAL;
-        user.deleted = false;
         for (UserRole userRole : userRoles) {
             user.addUserRole(userRole);
         }
@@ -62,10 +71,7 @@ public class User extends BaseTimeEntity {
     public static User createOAuthUser(OAuthAttributes attributes, Set<UserRole> userRoles) {
         User user = new User();
         user.email = attributes.getEmail();
-        user.nickname = attributes.getNickname();
-        user.picture = attributes.getPicture();
         user.provider = ProviderType.getProviderType(attributes.getRegistrationId());
-        user.deleted = false;
         for (UserRole userRole : userRoles) {
             user.addUserRole(userRole);
         }
@@ -73,9 +79,13 @@ public class User extends BaseTimeEntity {
     }
 
     // == 수정 메서드 ==
-    public <T extends UserRequest> User update(T request) {
-        this.nickname = request.getNickname();
-        this.picture = request.getPicture();
+    public <T extends UserRequest> User update(T request, File profileImage) {
+        if (hasText(request.getNickname())) {
+            this.nickname = request.getNickname();
+        }
+        if (profileImage != null) {
+            this.profileImage = profileImage;
+        }
         return this;
     }
 

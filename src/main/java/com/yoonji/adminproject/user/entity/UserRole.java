@@ -1,5 +1,6 @@
 package com.yoonji.adminproject.user.entity;
 
+import com.yoonji.adminproject.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

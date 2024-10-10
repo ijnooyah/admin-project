@@ -7,6 +7,8 @@ import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.file.entity.File;
+import com.yoonji.adminproject.file.service.FileService;
 import com.yoonji.adminproject.user.dto.request.SignUpRequest;
 import com.yoonji.adminproject.user.entity.Role;
 import com.yoonji.adminproject.user.entity.User;
@@ -18,9 +20,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
@@ -44,16 +49,18 @@ class AdminUserServiceTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private FileService fileService;
+
     private User user;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         Role role = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new CustomException(ErrorCode.ROLE_NOT_FOUND));
 
         SignUpRequest request = new SignUpRequest();
         request.setEmail("test@example.com");
         request.setNickname("nickname");
-        request.setPicture("picture");
         request.setPassword("password");
 
         UserRole userRole = UserRole.createUserRole(role);
@@ -61,6 +68,16 @@ class AdminUserServiceTest {
         User createdUser = User.createLocalUser(request, passwordEncoder, Collections.singleton(userRole));
 
         user = userRepository.save(createdUser);
+
+        MockMultipartFile profileImage = new MockMultipartFile(
+                "profileImage",
+                "test.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "test image content".getBytes()
+        );
+
+        File file = fileService.storeFile(profileImage);
+        user.addProfileImage(file);
     }
 
     @Test
@@ -77,13 +94,21 @@ class AdminUserServiceTest {
 
     @Test
     @DisplayName("사용자 정보 수정")
-    void updateUser() {
-        AdminUserUpdateRequest request = new AdminUserUpdateRequest("NewNickname", "new_picture.jpg");
-
-        AdminUserResponse response = adminUserService.updateUser(user.getId(), request);
+    void updateUser() throws IOException {
+        AdminUserUpdateRequest request = new AdminUserUpdateRequest("NewNickname");
+        MockMultipartFile newProfileImage = new MockMultipartFile(
+                "newProfileImage",
+                "newtest.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "test image content".getBytes()
+        );
+        AdminUserResponse response = adminUserService.updateUser(user.getId(), request, newProfileImage);
 
         assertThat(response.getNickname()).isEqualTo("NewNickname");
-        assertThat(response.getPicture()).isEqualTo("new_picture.jpg");
+        assertThat(response.getProfileImageUrl())
+                .startsWith("http://")
+                .contains("/files/")
+                .endsWith("newtest.jpg");
     }
 
     @Test
@@ -95,11 +120,11 @@ class AdminUserServiceTest {
 
         assertThat(response.getRoles()).containsExactlyInAnyOrder("ROLE_USER", "ROLE_ADMIN");
     }
-
+//
     @Test
     @DisplayName("새 사용자 추가")
     void addUser() {
-        AdminUserAddRequest request = new AdminUserAddRequest("new@example.com", "NewUser", "password", "picture.jpg", Set.of("ROLE_USER"));
+        AdminUserAddRequest request = new AdminUserAddRequest("new@example.com", "NewUser", "password", Set.of("ROLE_USER"));
 
         AdminUserResponse response = adminUserService.addUser(request);
 
@@ -111,20 +136,20 @@ class AdminUserServiceTest {
     @Test
     @DisplayName("중복 이메일로 사용자 추가 시 예외 발생")
     void addUserWithDuplicateEmail() {
-        AdminUserAddRequest request = new AdminUserAddRequest(user.getEmail(), "NewUser", "password", "picture.jpg", Set.of("ROLE_USER"));
+        AdminUserAddRequest request = new AdminUserAddRequest(user.getEmail(), "NewUser", "password", Set.of("ROLE_USER"));
 
         assertThatThrownBy(() -> adminUserService.addUser(request))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
-
+//
     @Test
     @DisplayName("존재하지 않는 사용자 정보 수정 시 예외 발생")
     void updateNonExistentUser() {
-        AdminUserUpdateRequest request = new AdminUserUpdateRequest("NewNickname", "new_picture.jpg");
+        AdminUserUpdateRequest request = new AdminUserUpdateRequest("NewNickname");
 
-        assertThatThrownBy(() -> adminUserService.updateUser(999L, request))
+        assertThatThrownBy(() -> adminUserService.updateUser(999L, request, null))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.USER_NOT_FOUND);

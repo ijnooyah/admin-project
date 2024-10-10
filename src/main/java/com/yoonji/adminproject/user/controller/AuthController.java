@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +21,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,10 +35,14 @@ public class AuthController implements AuthControllerDocs {
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
 
-    @PostMapping("/signup")
-    public CommonResponse<UserResponse> signup(@RequestBody SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<UserResponse> signup(
+            @RequestPart("signUpRequest") SignUpRequest signUpRequest,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
-        UserResponse signup = authService.signup(signUpRequest);
+        UserResponse signup = authService.signup(signUpRequest, profileImage);
 
         // 회원 가입 후 자동 로그인
         Authentication authentication = authenticationManager.authenticate(
@@ -57,8 +65,11 @@ public class AuthController implements AuthControllerDocs {
         return new CommonResponse<>(HttpStatus.OK);
     }
 
-    @PatchMapping("/additional-info")
-    public CommonResponse<UserResponse> updateUser(@AuthenticationPrincipal UserPrincipal principal, @RequestBody AdditionalInfoRequest request) {
-        return new CommonResponse<>(HttpStatus.OK, authService.updateUser(principal, request));
+    @PatchMapping(value = "/additional-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<UserResponse> updateUser(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestPart("additionalInfoRequest") AdditionalInfoRequest request,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) throws IOException {
+        return new CommonResponse<>(HttpStatus.OK, authService.updateUser(principal, request, profileImage));
     }
 }

@@ -26,6 +26,14 @@ spring:
   profiles:
     include: oauth
 
+  web:
+    resources:
+      static-locations: file:${file.upload-dir},classpath:/static/
+
+file:
+  upload-dir: ./uploads
+  base-url: http://localhost:8080/files
+
 springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json

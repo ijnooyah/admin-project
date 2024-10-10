@@ -10,6 +10,8 @@ import com.yoonji.adminproject.admin.dto.response.AdminUserResponse;
 import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.file.entity.File;
+import com.yoonji.adminproject.file.service.FileService;
 import com.yoonji.adminproject.user.dto.request.SortType;
 import com.yoonji.adminproject.user.entity.ProviderType;
 import com.yoonji.adminproject.user.entity.Role;
@@ -23,7 +25,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -38,6 +42,8 @@ import java.util.stream.IntStream;
 @Service
 public class AdminUserService {
 
+    private final FileService fileService;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
@@ -46,11 +52,12 @@ public class AdminUserService {
     private final Set<Role> roles;
 
     @Autowired
-    public AdminUserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, Set<Role> roles) {
+    public AdminUserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, FileService fileService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roles = getAllRoles();
+        this.fileService = fileService;
     }
 
     private Set<Role> getAllRoles() {
@@ -69,6 +76,9 @@ public class AdminUserService {
                 .provider(user.getProvider().name())
                 .nickname(user.getNickname())
                 .createdAt(user.getCreatedAt())
+                .profileImageUrl(user.getProfileImage() != null ?
+                        fileService.getFileUrl(user.getProfileImage()) :
+                        null)
                 .build();
     }
 
@@ -82,19 +92,31 @@ public class AdminUserService {
 
     @CacheEvict(cacheNames = "userCache", key = "'users:' + #id + ':profile'")
     @Transactional
-    public AdminUserResponse updateUser(Long id, AdminUserUpdateRequest request) {
+    public AdminUserResponse updateUser(Long id, AdminUserUpdateRequest request, MultipartFile profileImage) throws IOException {
         User findUser = userRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        User updateUser = findUser.update(request);
+        // 기존 이미지가 있다면 삭제
+        if (findUser.getProfileImage() != null) {
+            fileService.deleteFile(findUser.getProfileImage());
+        }
+
+        File file = profileImage != null && !profileImage.isEmpty() ?
+                fileService.storeFile(profileImage) :
+                null;
+
+        User updateUser = findUser.update(request, file);
+
         return AdminUserResponse.builder()
                 .email(updateUser.getEmail())
                 .nickname(updateUser.getNickname())
-                .picture(updateUser.getPicture())
                 .roles(updateUser.getUserRoles().stream()
                         .map(userRole -> userRole.getRole().getName())
                         .collect(Collectors.toSet()))
                 .provider(updateUser.getProvider().name())
+                .profileImageUrl(updateUser.getProfileImage() != null ?
+                        fileService.getFileUrl(updateUser.getProfileImage()) :
+                        null)
                 .build();
     }
 
@@ -121,7 +143,6 @@ public class AdminUserService {
         return AdminUserResponse.builder()
                 .email(updateUser.getEmail())
                 .nickname(updateUser.getNickname())
-                .picture(updateUser.getPicture())
                 .roles(updateUser.getUserRoles().stream()
                         .map(userRole -> userRole.getRole().getName())
                         .collect(Collectors.toSet()))
@@ -148,7 +169,6 @@ public class AdminUserService {
         return AdminUserResponse.builder()
                 .email(savedUser.getEmail())
                 .nickname(savedUser.getNickname())
-                .picture(savedUser.getPicture())
                 .roles(savedUser.getUserRoles().stream()
                         .map(userRole -> userRole.getRole().getName())
                         .collect(Collectors.toSet()))

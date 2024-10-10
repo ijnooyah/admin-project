@@ -1,6 +1,6 @@
 package com.yoonji.adminproject.admin.dto.request;
 
-import com.yoonji.adminproject.common.dto.request.user.UserRequest;
+import com.yoonji.adminproject.user.dto.request.UserRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.yoonji.adminproject.common.dto.request.user;
+package com.yoonji.adminproject.user.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -18,6 +18,4 @@ public abstract class UserRequest {
     private String newPassword;
     @Schema(hidden = true)
     private String password;
-    @Schema(hidden = true)
-    private String picture;
 }

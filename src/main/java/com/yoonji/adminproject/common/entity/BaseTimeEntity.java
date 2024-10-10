@@ -1,4 +1,4 @@
-package com.yoonji.adminproject.user.entity;
+package com.yoonji.adminproject.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

@@ -11,12 +11,16 @@ import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.admin.service.AdminUserService;
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.admin.controller.AdminUserControllerDocs;
+import com.yoonji.adminproject.user.dto.request.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 @RestController
@@ -44,9 +48,13 @@ public class AdminUserController implements AdminUserControllerDocs {
         return new CommonResponse<>(HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}")
-    public CommonResponse<AdminUserResponse> updateUser(@PathVariable Long id, @RequestBody AdminUserUpdateRequest request) {
-        return new CommonResponse<>(HttpStatus.OK, adminUserService.updateUser(id, request));
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<AdminUserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestPart("adminUserUpdateRequest") AdminUserUpdateRequest request,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) throws IOException {
+        return new CommonResponse<>(HttpStatus.OK, adminUserService.updateUser(id, request, profileImage));
     }
 
     @PatchMapping("/{id}/roles")

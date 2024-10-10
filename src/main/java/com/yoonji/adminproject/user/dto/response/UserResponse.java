@@ -11,12 +11,12 @@ import lombok.Setter;
 public class UserResponse {
     private String email;
     private String nickname;
-    private String picture;
+    private String profileImageUrl;
 
     @Builder
-    public UserResponse(String email, String nickname, String picture) {
+    public UserResponse(String email, String nickname, String profileImageUrl) {
         this.email = email;
         this.nickname = nickname;
-        this.picture = picture;
+        this.profileImageUrl = profileImageUrl;
     }
 }

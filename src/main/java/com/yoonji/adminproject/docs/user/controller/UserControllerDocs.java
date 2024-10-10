@@ -16,6 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Tag(name = "User", description = "User API")
 public interface UserControllerDocs {
@@ -42,7 +46,10 @@ public interface UserControllerDocs {
             @ApiResponse(responseCode = "401", description = "회원 정보 수정 실패(권한 없음)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
-    CommonResponse<UserResponse> updateUser(@AuthenticationPrincipal UserPrincipal principal, @RequestBody UserUpdateRequest request);
+    CommonResponse<UserResponse> updateUser(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestPart("userUpdateRequest") UserUpdateRequest request,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) throws IOException;
 
     @Operation(summary = "회원 비밀번호 수정")
     @ApiResponses(value = {
