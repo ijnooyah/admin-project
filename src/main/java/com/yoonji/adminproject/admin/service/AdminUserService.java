@@ -20,6 +20,7 @@ import com.yoonji.adminproject.user.entity.UserRole;
 import com.yoonji.adminproject.user.repository.RoleRepository;
 import com.yoonji.adminproject.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -218,10 +219,10 @@ public class AdminUserService {
         String formattedCreatedAt = createdAt.format(formatter);
 
         // 2. 포맷된 createdAt을 20자리로 왼쪽을 '0'으로 채움
-        String customCursorCreatedAt = String.format("%1$" + 20 + "s", formattedCreatedAt).replace(' ', '0');
+        String customCursorCreatedAt = StringUtils.leftPad(formattedCreatedAt, 20, '0');
 
         // 3. userId를 문자열로 변환하고 10자리로 왼쪽을 '0'으로 채움
-        String customCursorId = String.format("%1$" + 10 + "s", userId).replace(' ', '0');
+        String customCursorId = StringUtils.leftPad(userId.toString(), 10, '0');
 
         // 4. 두 값을 연결하여 반환
         return customCursorCreatedAt + customCursorId;
