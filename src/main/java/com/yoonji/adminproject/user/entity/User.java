@@ -79,14 +79,13 @@ public class User extends BaseTimeEntity {
     }
 
     // == 수정 메서드 ==
-    public <T extends UserRequest> User update(T request, File profileImage) {
+    public <T extends UserRequest> void update(T request, File profileImage) {
         if (hasText(request.getNickname())) {
             this.nickname = request.getNickname();
         }
         if (profileImage != null) {
             this.profileImage = profileImage;
         }
-        return this;
     }
 
     public void updatePassword(String rawPassword, PasswordEncoder passwordEncoder) {

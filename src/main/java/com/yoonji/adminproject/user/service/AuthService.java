@@ -84,13 +84,13 @@ public class AuthService {
         File file = profileImage != null && !profileImage.isEmpty() ?
                 fileService.storeFile(profileImage) : null;
 
-        User updateUser = findUser.update(request, file);
+        findUser.update(request, file);
 
         return UserResponse.builder()
-                .nickname(updateUser.getNickname())
-                .email(updateUser.getEmail())
-                .profileImageUrl(updateUser.getProfileImage() != null ?
-                        fileService.getFileUrl(updateUser.getProfileImage()) :
+                .nickname(findUser.getNickname())
+                .email(findUser.getEmail())
+                .profileImageUrl(findUser.getProfileImage() != null ?
+                        fileService.getFileUrl(findUser.getProfileImage()) :
                         null)
                 .build();
     }

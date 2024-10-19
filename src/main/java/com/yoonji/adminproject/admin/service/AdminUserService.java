@@ -106,17 +106,17 @@ public class AdminUserService {
                 fileService.storeFile(profileImage) :
                 null;
 
-        User updateUser = findUser.update(request, file);
+        findUser.update(request, file);
 
         return AdminUserResponse.builder()
-                .email(updateUser.getEmail())
-                .nickname(updateUser.getNickname())
-                .roles(updateUser.getUserRoles().stream()
+                .email(findUser.getEmail())
+                .nickname(findUser.getNickname())
+                .roles(findUser.getUserRoles().stream()
                         .map(userRole -> userRole.getRole().getName())
                         .collect(Collectors.toSet()))
-                .provider(updateUser.getProvider().name())
-                .profileImageUrl(updateUser.getProfileImage() != null ?
-                        fileService.getFileUrl(updateUser.getProfileImage()) :
+                .provider(findUser.getProvider().name())
+                .profileImageUrl(findUser.getProfileImage() != null ?
+                        fileService.getFileUrl(findUser.getProfileImage()) :
                         null)
                 .build();
     }
