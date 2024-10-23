@@ -21,6 +21,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     private final String nickname;
     private final Set<String> roles;
     private final OAuth2User oAuth2User;
+    private final User user;
 
     public UserPrincipal(User user, OAuth2User oAuth2User) {
         this.id = user.getId();
@@ -31,6 +32,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
                 .map(userRole -> userRole.getRole().getName())
                 .collect(Collectors.toSet());
         this.oAuth2User = oAuth2User;
+        this.user = user;
     }
 
     @Override

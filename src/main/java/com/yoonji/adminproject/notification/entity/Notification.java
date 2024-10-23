@@ -23,18 +23,19 @@ public class Notification extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
-    private String entityType;
+    @Enumerated(EnumType.STRING)
+    private EntityType entityType;
 
     private Long entityId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private User target;
 
     // == 생성 메서드 ==
-    public static Notification createNotification(User user, String message, NotificationType type, String entityType, Long entityId) {
+    public static Notification createNotification(User target, String message, NotificationType type, EntityType entityType, Long entityId) {
         Notification notification = new Notification();
-        notification.user = user;
+        notification.target = target;
         notification.message = message;
         notification.type = type;
         notification.entityType = entityType;

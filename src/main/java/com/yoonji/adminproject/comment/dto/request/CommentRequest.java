@@ -12,7 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class CommentRequest {
-    @NotBlank(message = "댓글 내용은 필수 입력 항목입니다.")
     private String content;
 
     @Schema(hidden = true)

@@ -8,6 +8,10 @@ import com.yoonji.adminproject.comment.entity.Comment;
 import com.yoonji.adminproject.comment.repository.CommentRepository;
 import com.yoonji.adminproject.common.exception.CustomException;
 import com.yoonji.adminproject.common.exception.ErrorCode;
+import com.yoonji.adminproject.notification.entity.EntityType;
+import com.yoonji.adminproject.notification.entity.NotificationType;
+import com.yoonji.adminproject.notification.repository.NotificationRepository;
+import com.yoonji.adminproject.notification.service.NotificationService;
 import com.yoonji.adminproject.post.entity.Post;
 import com.yoonji.adminproject.post.repository.PostRepository;
 import com.yoonji.adminproject.security.principal.UserPrincipal;
@@ -30,6 +34,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public CommentResponse createComment(CommentCreateRequest request, UserPrincipal principal, Long postId) {
@@ -56,6 +61,14 @@ public class CommentService {
                         parentComment,
                         mentionedUser
                 )
+        );
+
+        notificationService.sendNotification(
+                user,
+                user.getNickname() + "님이 댓글을 작성했습니다.",
+                NotificationType.COMMENT,
+                EntityType.POST,
+                postId
         );
 
         return convertToCommentResponse(savedComment, mentionedUser);
