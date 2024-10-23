@@ -25,6 +25,7 @@ public class RestAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         UserResponse userResponse = UserResponse.builder()
+                .id(userPrincipal.getId())
                 .nickname(userPrincipal.getNickname())
                 .email(userPrincipal.getEmail())
                 .build();
