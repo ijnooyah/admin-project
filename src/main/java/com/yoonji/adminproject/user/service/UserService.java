@@ -38,6 +38,7 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return UserResponse.builder()
+                .id(findUser.getId())
                 .nickname(findUser.getNickname())
                 .email(findUser.getEmail())
                 .profileImageUrl(findUser.getProfileImage() != null ?
@@ -53,6 +54,7 @@ public class UserService {
         User findUser = userRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         return UserResponse.builder()
+                .id(findUser.getId())
                 .nickname(findUser.getNickname())
                 .email(findUser.getEmail())
                 .profileImageUrl(findUser.getProfileImage() != null ?
@@ -80,6 +82,7 @@ public class UserService {
         findUser.update(request, file);
 
         return UserResponse.builder()
+                .id(findUser.getId())
                 .nickname(findUser.getNickname())
                 .email(findUser.getEmail())
                 .profileImageUrl(findUser.getProfileImage() != null ?
