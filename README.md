@@ -212,7 +212,7 @@ public UserResponse updateUser(UserPrincipal principal, UserUpdateRequest reques
 | 표준 편차 | 1,493.38ms | 726.83ms | **-51.33%** |
 | 처리량 | 37.99 req/s | 74.96 req/s | **+97.32%** |
 
-#### 비교 그래프
+#### 로그 변화
 | 캐시 적용 전 | 캐시 적용 후 |
 |--------------|--------------|
 | ![before](https://github.com/user-attachments/assets/1229b17a-1a28-4b2b-83e7-5afd6189f0de) | ![after](https://github.com/user-attachments/assets/4bd1b499-6195-486d-a5cc-337a14de0c26) |
