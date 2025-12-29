@@ -53,10 +53,11 @@ public class CommentService {
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         }
 
+        Post post = getPostByPostId(postId);
         Comment savedComment = commentRepository.save(
                 Comment.createComment(
                         request,
-                        getPostByPostId(postId),
+                        post,
                         user,
                         parentComment,
                         mentionedUser
@@ -64,7 +65,7 @@ public class CommentService {
         );
 
         notificationService.sendNotification(
-                user,
+                post.getAuthor(),
                 user.getNickname() + "님이 댓글을 작성했습니다.",
                 NotificationType.COMMENT,
                 EntityType.POST,

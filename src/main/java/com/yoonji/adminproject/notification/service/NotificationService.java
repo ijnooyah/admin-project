@@ -87,12 +87,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public void sendNotification(User user, String message, NotificationType type,
+    public void sendNotification(User targetUser, String message, NotificationType type,
                                  EntityType entityType, Long entityId) {
         try {
             // 알림 생성 및 저장
             Notification notification = Notification.createNotification(
-                    user,
+                    targetUser,
                     message,
                     type,
                     entityType,
