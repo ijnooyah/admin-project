@@ -1,43 +1,19 @@
 spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ENC(9IdTlqsjf3DXgV4TDlroMm999Kvlt6OuWLPtlcUZeJl2VBCHJ20FCztbO82nBwwsyI97cnuIBgiDpvwX4uXrTaJ1HVscpu+jwH1kViEyZQ5eXOZiW9w8TuOTJfT2xUTY6O4zn7cx49TW1HY8uSSHg4JVY0oyIogeV7s5qjP6GLPJRZdxO/uaPA==)
-    username: ENC(CKWjcHdH8rehAjxlyXRIdQ==)
-    password: ENC(HBv/vxxoC9IWg/HyH0/65w==)
+  profiles:
+    active: local
+    include: oauth
 
   jpa:
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 1000
-    defer-datasource-initialization: false
 
-  sql:
-    init:
-      mode: always
+  springdoc:
+    default-consumes-media-type: application/json
+    default-produces-media-type: application/json
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-  profiles:
-    include: oauth
-
-  web:
-    resources:
-      static-locations: file:${file.upload-dir},classpath:/static/
-
-file:
-  upload-dir: ./uploads
-  base-url: http://localhost:8080/files
-
-springdoc:
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
-
-logging.level:
-  org.hibernate.SQL: debug
-  com.yoonji.adminproject: debug
+logging:
+  level:
+    org.hibernate.SQL: debug
+    com.yoonji.adminproject: debug
