@@ -1,11 +1,14 @@
 # Admin Project
 
+## 🚀 API Docs
+- Swagger: http://43.201.211.119:8080/swagger-ui/index.html
+
 > 복잡한 조회·집계·인증 시나리오를 직접 구현해보기 위해 만든 관리자(Back-office) API 프로젝트입니다.  
 Querydsl을 활용한 동적 검색/집계, 커서 기반 페이징, Redis 캐싱, SSE 실시간 알림,  
 Spring Security 기반 REST 로그인 및 OAuth2 소셜 로그인 흐름 등  
 실무에서 자주 등장하지만 깊이 다뤄보기 어려웠던 기능들을 중심으로 설계·구현했습니다.
 
-[![Java](https://img.shields.io/badge/Java-17-red)]()
+[![Java](https://img.shields.io/badge/Java-21-red)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)]()
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)]()
 [![Redis](https://img.shields.io/badge/Redis-latest-red)]()
@@ -48,19 +51,24 @@ Spring Security 기반 REST 로그인 및 OAuth2 소셜 로그인 흐름 등
 ## 🛠 기술 스택
 
 ### Backend
-- **Language**: Java 17
+- **Language**: Java 21
 - **Framework**: Spring Boot 3.x, Spring Security
 - **ORM**: Spring Data JPA
 - **Authentication**: Spring Security, OAuth
 
 ### Database & Cache
-- **Database**: MySQL 8.0, H2 (Test)
+- **Database**: MySQL, H2 (Test)
 - **Cache**: Redis
 
 ### Tools & Libraries
 - **Build**: Gradle
 - **Testing**: JUnit 5, JMeter
 - **API Docs**: Swagger
+
+### Infrastructure & DevOps
+- **Cloud**: AWS EC2 (Amazon Linux)
+- **Container**: Docker
+- **Registry**: Docker Hub
 
 ---
 
