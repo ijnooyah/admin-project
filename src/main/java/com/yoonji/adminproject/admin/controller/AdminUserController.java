@@ -11,7 +11,6 @@ import com.yoonji.adminproject.admin.dto.response.NewUserStatisticsResponse;
 import com.yoonji.adminproject.admin.service.AdminUserService;
 import com.yoonji.adminproject.common.dto.response.CommonResponse;
 import com.yoonji.adminproject.docs.admin.controller.AdminUserControllerDocs;
-import com.yoonji.adminproject.user.dto.request.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
